@@ -861,7 +861,13 @@ public class MainActivity extends Activity {
                 settingPressed = false;
             }
 
-            // Direct game screen touch pass-through mapped 1:1 to 800x480 landscape space
+            // Direct game screen touch pass-through mapped to Gameloft GT-S8000 touch layer
+            // Gameloft GT-S8000 engine executes internal bm() method:
+            //   gameX = p2
+            //   gameY = 480 - p1
+            // Therefore to deliver exact (gx, gy) in landscape space:
+            //   p1 = 480 - gy  (portrait hardware X)
+            //   p2 = gx        (portrait hardware Y)
             javax.microedition.lcdui.Canvas c = javax.microedition.lcdui.Canvas.currentInstance;
             if (c != null) {
                 final float baseW = 800f;
@@ -874,8 +880,10 @@ public class MainActivity extends Activity {
                         float ry = (ty - rectGame.top) * baseH / rectGame.height();
                         int gx = Math.max(0, Math.min(799, (int) rx));
                         int gy = Math.max(0, Math.min(479, (int) ry));
+                        int p1 = Math.max(0, Math.min(480, 480 - gy));
+                        int p2 = Math.max(0, Math.min(800, gx));
 
-                        c.pointerPressed(gx, gy);
+                        c.pointerPressed(p1, p2);
                     }
                 } else if (action == MotionEvent.ACTION_MOVE) {
                     if (gameTouchPointerId != -1) {
@@ -885,7 +893,10 @@ public class MainActivity extends Activity {
                             float ry = (event.getY(idx) - rectGame.top) * baseH / rectGame.height();
                             int gx = Math.max(0, Math.min(799, (int) rx));
                             int gy = Math.max(0, Math.min(479, (int) ry));
-                            c.pointerDragged(gx, gy);
+                            int p1 = Math.max(0, Math.min(480, 480 - gy));
+                            int p2 = Math.max(0, Math.min(800, gx));
+
+                            c.pointerDragged(p1, p2);
                         }
                     }
                 } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_POINTER_UP) {
@@ -894,12 +905,15 @@ public class MainActivity extends Activity {
                         float ry = (ty - rectGame.top) * baseH / rectGame.height();
                         int gx = Math.max(0, Math.min(799, (int) rx));
                         int gy = Math.max(0, Math.min(479, (int) ry));
-                        c.pointerReleased(gx, gy);
+                        int p1 = Math.max(0, Math.min(480, 480 - gy));
+                        int p2 = Math.max(0, Math.min(800, gx));
+
+                        c.pointerReleased(p1, p2);
                         gameTouchPointerId = -1;
                     }
                 } else if (action == MotionEvent.ACTION_CANCEL) {
                     if (pointerId == gameTouchPointerId) {
-                        c.pointerReleased(0, 0);
+                        c.pointerReleased(240, 400);
                         gameTouchPointerId = -1;
                     }
                 }
