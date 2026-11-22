@@ -1,0 +1,7 @@
+build/
+build_tmp/
+tmp_inspect/
+*.keystore
+.DS_Store
+*.png
+*.jpg
